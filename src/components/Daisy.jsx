@@ -11,7 +11,7 @@ import { pluckPetal } from '../lib/petalChoreography.js'
 import { wordAt } from '../lib/phrases.js'
 
 const Daisy = forwardRef(function Daisy(
-  { model, phase, reduced, audio, haptics, vec, onPluck, onShake, onVerdict, onTimewarp },
+  { model, phase, reduced, audio, haptics, vec, onPluck, onShake, onVerdict, onTimewarp, resting },
   ref
 ) {
   const { center, view, heartR, petals, pollen, stem, leaves } = model
@@ -91,7 +91,6 @@ const Daisy = forwardRef(function Daisy(
   useEffect(() => {
     activeRef.current = phase === 'ritual'
     if (phase === 'ritual') {
-      idleRef.current && idleRef.current.resume() // the flower wakes up (idle gated to ritual)
       const anchors = elsRef.current.anchors
       if (reducedRef.current) {
         gsap.to(anchors, { scale: 1, duration: 0.5, stagger: 0.008, ease: 'power2.out' })
@@ -105,11 +104,17 @@ const Daisy = forwardRef(function Daisy(
         })
       }
     }
-    if (phase === 'verdict') {
-      // ritual's over and the card covers the scene — stop the idle ticker
-      idleRef.current && idleRef.current.stop()
-    }
   }, [phase])
+
+  // the idle ticker runs ONLY while actively in the ritual: gated to the ritual
+  // phase AND auto-rested after ~2s of no interaction (kills the "heats while you
+  // linger" cost — the flower gently stills until the next touch wakes it).
+  useEffect(() => {
+    const ctl = idleRef.current
+    if (!ctl) return
+    if (phase === 'ritual' && !resting) ctl.resume()
+    else ctl.pause()
+  }, [phase, resting])
 
   // tap-anywhere + keyboard plucking, exposed to the parent: the scene listens
   // for taps and asks the flower to drop the petal nearest the tap.

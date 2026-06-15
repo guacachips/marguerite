@@ -40,6 +40,7 @@ export function startIdle(refs) {
   const t0 = gsap.ticker.time
   let glowBeat = 0
   let flowerFrozen = false
+  let lastTick = -1 // throttle the idle to ~30fps (breathing is slow motion)
 
   // ---- pose all transform origins ONCE (constant) --------------------
   gsap.set(corollaEl, { svgOrigin: `${cx} ${cy}` })
@@ -47,15 +48,14 @@ export function startIdle(refs) {
   if (coreGlowEl) gsap.set(coreGlowEl, { svgOrigin: `${cx} ${cy}` })
   if (stemEl) gsap.set(stemEl, { svgOrigin: `${cx} ${cy + model.heartR}` })
 
-  // pre-pose each petal's origin once; animate only rotation via a quickSetter
-  const petalRot = petalEls.map((el) => {
-    if (!el) return null
-    gsap.set(el, { transformOrigin: '50% 100%' })
-    return gsap.quickSetter(el, 'rotation', 'deg')
-  })
-
   const update = () => {
-    const t = gsap.ticker.time - t0
+    // ~30fps cap: breathing/sway are slow motions, so halving the update rate
+    // halves the idle CPU and the per-frame re-compositing of the flower —
+    // the dominant "heats while you linger" cost, per on-device profiling.
+    const now = gsap.ticker.time
+    if (now - lastTick < 0.032) return
+    lastTick = now
+    const t = now - t0
     const isReduced = reduced()
 
     // ---- breathing (origin already posed) ------------------------------
@@ -92,14 +92,6 @@ export function startIdle(refs) {
 
     // ---- ground shadow deforms with sway -------------------------------
     if (shadowEl) gsap.set(shadowEl, { scaleX: 1 + sway * 0.03, x: sway * 4 })
-
-    // ---- per-petal shiver (skip plucked) -------------------------------
-    for (let i = 0; i < petalEls.length; i++) {
-      const setter = petalRot[i]
-      if (!petalEls[i] || !setter) continue
-      const p = model.petals[i]
-      setter(Math.sin(t * (TAU / p.swayPeriod) + p.swayPhase) * p.swayAmp)
-    }
   }
 
   // ---- gated lifecycle: only spin the ticker while the flower is alive --

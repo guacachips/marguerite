@@ -33,6 +33,7 @@ export default function App() {
   const [pluckedCount, setPluckedCount] = useState(0)
   const [verdictEntry, setVerdictEntry] = useState(null)
   const [timewarp, setTimewarp] = useState(false)
+  const [resting, setResting] = useState(false)
   const [muted, setMuted] = useState(() => audio.isMuted())
 
   const model = useMemo(() => generateDaisy(seed), [seed])
@@ -122,6 +123,23 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', onVis)
   }, [audio])
 
+  // auto-rest: a couple of seconds after the last tap, let the flower go still
+  // (the dominant "heats while you linger" cost). It wakes on the next touch.
+  useEffect(() => {
+    let timer
+    const arm = () => {
+      setResting(false)
+      clearTimeout(timer)
+      timer = setTimeout(() => setResting(true), 1300)
+    }
+    window.addEventListener('pointerdown', arm, { passive: true })
+    arm()
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('pointerdown', arm)
+    }
+  }, [])
+
   return (
     <Stage
       sceneRef={sceneRef}
@@ -144,6 +162,7 @@ export default function App() {
             onShake={handleShake}
             onVerdict={handleVerdict}
             onTimewarp={setTimewarp}
+            resting={resting}
           />
         </>
       }

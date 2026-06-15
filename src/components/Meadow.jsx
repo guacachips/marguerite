@@ -28,10 +28,11 @@ function GhostDaisy({ className, style }) {
   )
 }
 
-export default function Meadow({ vec, reduced }) {
+export default function Meadow({ vec, reduced, resting }) {
   const backRef = useRef(null)
   const frontRef = useRef(null)
   const sporeRef = useRef(null)
+  const tlsRef = useRef([])
 
   const motes = useMemo(() => {
     const list = []
@@ -42,8 +43,8 @@ export default function Meadow({ vec, reduced }) {
       dur: (front ? 16 : 24) + Math.random() * 14,
       blur: front ? 0.4 + Math.random() * 1 : 1 + Math.random() * 2,
     })
-    for (let i = 0; i < 16; i++) list.push(make(false))
-    for (let i = 0; i < 5; i++) list.push(make(true))
+    for (let i = 0; i < 8; i++) list.push(make(false))
+    for (let i = 0; i < 3; i++) list.push(make(true))
     return list
   }, [])
 
@@ -67,7 +68,7 @@ export default function Meadow({ vec, reduced }) {
       return
     }
     let stopped = false
-    const tls = []
+    const tls = (tlsRef.current = [])
     // rise via transform (translateY) only — animating top/left forces layout
     // every frame; profiling showed the motes alone cost ~1500 reflows / 6s.
     const H = backRef.current?.clientHeight || window.innerHeight || 800
@@ -106,6 +107,12 @@ export default function Meadow({ vec, reduced }) {
       tls.forEach((t) => t.kill())
     }
   }, [motes, reduced])
+
+  // auto-rest: pause the ambient motes when the scene rests (no recent
+  // interaction) so the meadow stops costing per-frame work while you linger.
+  useEffect(() => {
+    tlsRef.current.forEach((t) => (resting ? t.pause() : t.resume()))
+  }, [resting])
 
   // parallax — back and front drift in opposition
   useEffect(() => {
@@ -173,7 +180,7 @@ export default function Meadow({ vec, reduced }) {
           className="ghost-daisy"
           style={{ left: '64%', top: '58%', width: '34%', opacity: 0.2 }}
         />
-        {motes.slice(0, 16).map((m, i) => (
+        {motes.slice(0, 8).map((m, i) => (
           <span
             key={i}
             className="mote"
@@ -186,7 +193,7 @@ export default function Meadow({ vec, reduced }) {
         ))}
       </div>
       <div className="meadow meadow--front" ref={frontRef} aria-hidden="true">
-        {motes.slice(16).map((m, i) => (
+        {motes.slice(8).map((m, i) => (
           <span
             key={i}
             className="mote mote--front"
