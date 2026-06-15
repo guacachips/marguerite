@@ -38,10 +38,13 @@ export function startIdle(refs) {
   const cx = model.center.x
   const cy = model.center.y
   const baseOriginY = model.view.h
-  const t0 = gsap.ticker.time
+  let t0 = gsap.ticker.time
   let glowBeat = 0
   let flowerFrozen = false
-  let lastTick = -1 // throttle the idle to ~30fps (breathing is slow motion)
+  let lastTick = -1
+  // the idle "clock": only advances while running, so on wake the flower picks
+  // up its breathing/sway from exactly where it froze instead of teleporting.
+  let lastT = 0
 
   // ---- pose all transform origins ONCE (constant) --------------------
   gsap.set(corollaEl, { svgOrigin: `${cx} ${cy}` })
@@ -70,6 +73,7 @@ export function startIdle(refs) {
       lastTick = now
     }
     const t = now - t0
+    lastT = t
     const isReduced = reduced()
 
     // ---- breathing (origin already posed) ------------------------------
@@ -122,6 +126,10 @@ export function startIdle(refs) {
   let running = false
   function resume() {
     if (!running) {
+      // rebase the clock so t resumes from where it froze — without this, time
+      // advanced while the idle was paused and the flower would jump on wake.
+      t0 = gsap.ticker.time - lastT
+      lastTick = -1
       gsap.ticker.add(update)
       running = true
     }
