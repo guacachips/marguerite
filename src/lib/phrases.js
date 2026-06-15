@@ -100,7 +100,7 @@ export const COPY = {
   introTitle: 'Effeuille\nla marguerite',
   introLine: 'Pense très fort à quelqu’un,\npuis détache les pétales un à un.',
   cta: 'Effeuiller la marguerite',
-  pluckHint: 'touche un pétale',
+  pluckHint: 'touche pour effeuiller',
   lastPetalHint: 'le dernier pétale…',
   replay: 'Une autre fleur',
   verdictKicker: 'la marguerite a parlé',

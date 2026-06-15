@@ -471,6 +471,9 @@
 .scene--timewarp {
   filter: saturate(0.62) brightness(1.03) blur(1.4px);
 }
+.scene--ritual {
+  cursor: pointer; /* tap anywhere on the scene to pluck */
+}
 
 /* ===================== HEART POLLEN SHIMMER =========================== */
 .heart-pollen {

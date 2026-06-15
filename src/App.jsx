@@ -37,6 +37,7 @@ export default function App() {
 
   const model = useMemo(() => generateDaisy(seed), [seed])
   const sceneRef = useRef(null)
+  const daisyRef = useRef(null)
 
   const currentWord = pluckedCount > 0 ? wordAt(pluckedCount - 1) : null
 
@@ -76,6 +77,11 @@ export default function App() {
     )
   }, [])
 
+  // a tap anywhere on the scene drops the petal nearest the tap point
+  const handleScenePointerDown = useCallback((e) => {
+    daisyRef.current?.pluckAt(e.clientX, e.clientY)
+  }, [])
+
   const handleVerdict = useCallback(({ wordId }) => {
     const entry = CYCLE.find((c) => c.id === wordId) || CYCLE[0]
     setVerdictEntry(entry)
@@ -102,13 +108,15 @@ export default function App() {
   return (
     <Stage
       sceneRef={sceneRef}
-      sceneClass={timewarp ? 'scene--timewarp' : ''}
+      sceneClass={`${phase === 'ritual' ? 'scene--ritual ' : ''}${timewarp ? 'scene--timewarp' : ''}`}
+      onScenePointerDown={handleScenePointerDown}
       scene={
         <>
           <Backdrop vec={parallax.vec} />
           <Meadow vec={parallax.vec} reduced={reduced} />
           <Daisy
             key={seed}
+            ref={daisyRef}
             model={model}
             phase={phase}
             reduced={reduced}

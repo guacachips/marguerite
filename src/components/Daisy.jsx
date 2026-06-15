@@ -3,25 +3,17 @@
    each petal squashes, snaps, is promoted into world space and planes down,
    firing synchronized sound / word / pollen / ripple / haptics / heartbeat.
    The final petal triggers the time-warp + bloom that hands off the verdict. */
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import gsap from '../lib/gsapSetup.js'
 import { startIdle } from '../lib/idle.js'
 import { createParticles } from '../lib/particles.js'
 import { pluckPetal } from '../lib/petalChoreography.js'
 import { wordAt } from '../lib/phrases.js'
 
-export default function Daisy({
-  model,
-  phase,
-  reduced,
-  audio,
-  haptics,
-  vec,
-  onPluck,
-  onShake,
-  onVerdict,
-  onTimewarp,
-}) {
+const Daisy = forwardRef(function Daisy(
+  { model, phase, reduced, audio, haptics, vec, onPluck, onShake, onVerdict, onTimewarp },
+  ref
+) {
   const { center, view, heartR, petals, pollen, stem, leaves } = model
   const total = model.petalCount
 
@@ -118,6 +110,10 @@ export default function Daisy({
     }
   }, [phase])
 
+  // tap-anywhere + keyboard plucking, exposed to the parent: the scene listens
+  // for taps and asks the flower to drop the petal nearest the tap.
+  useImperativeHandle(ref, () => ({ pluckAt, pluckNext }), [])
+
   // ---- the synchronized burst fired at each petal's snap -------------
   function onSnap(bp, isLast) {
     pluckedRef.current += 1
@@ -201,13 +197,6 @@ export default function Daisy({
     })
   }
 
-  // pointer: tap a specific petal (event delegation on the group)
-  const onPointerDown = (e) => {
-    const path = e.target.closest('.petal-path')
-    if (!path) return
-    pluck(parseInt(path.dataset.index, 10))
-  }
-
   // keyboard / assistive tech: one control plucks the next available petal,
   // so screen-reader users get a single clear affordance (not 37 tab stops)
   function pluckNext() {
@@ -219,6 +208,29 @@ export default function Daisy({
         return
       }
     }
+  }
+
+  // tap anywhere on the scene: detach the petal nearest the tap point, so no
+  // precision is needed. Falls back to the next petal if distances are unusable.
+  function pluckAt(clientX, clientY) {
+    if (!activeRef.current) return
+    const { anchors } = elsRef.current
+    let best = -1
+    let bestD = Infinity
+    for (let i = 0; i < anchors.length; i++) {
+      const a = anchors[i]
+      if (!a || !a.isConnected || pluckingRef.current.has(i)) continue
+      const r = a.getBoundingClientRect()
+      const dx = r.left + r.width / 2 - clientX
+      const dy = r.top + r.height / 2 - clientY
+      const d = dx * dx + dy * dy
+      if (d < bestD) {
+        bestD = d
+        best = i
+      }
+    }
+    if (best >= 0) pluck(best)
+    else pluckNext()
   }
 
   // ---- render ---------------------------------------------------------
@@ -304,7 +316,7 @@ export default function Daisy({
         ))}
 
         <g ref={corollaRef} className="corolla">
-          <g ref={petalsGroupRef} className="petals" onPointerDown={onPointerDown}>
+          <g ref={petalsGroupRef} className="petals">
             {petals.map((p) => (
               <g className="petal-anchor" key={p.index}>
                 <g className="petal">
@@ -383,4 +395,6 @@ export default function Daisy({
     )}
     </>
   )
-}
+})
+
+export default Daisy
