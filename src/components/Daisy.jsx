@@ -11,7 +11,7 @@ import { pluckPetal } from '../lib/petalChoreography.js'
 import { wordAt } from '../lib/phrases.js'
 
 const Daisy = forwardRef(function Daisy(
-  { model, phase, reduced, audio, haptics, vec, onPluck, onShake, onVerdict, onTimewarp, resting },
+  { model, phase, reduced, audio, haptics, vec, onPluck, onShake, onVerdict, onTimewarp, resting, lean },
   ref
 ) {
   const { center, view, heartR, petals, pollen, stem, leaves } = model
@@ -74,6 +74,7 @@ const Daisy = forwardRef(function Daisy(
       petalEls,
       model,
       vec,
+      lean,
       reduced: () => reducedRef.current,
     })
     // expose the mutable petalEls so pluck() can null entries
@@ -267,8 +268,8 @@ const Daisy = forwardRef(function Daisy(
         {/* soft ground shadow as a radial fade — NOT a CSS blur, which fails to
             render on SVG child elements on mobile browsers (and costs GPU). */}
         <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#93A877" stopOpacity="0.62" />
-          <stop offset="0.5" stopColor="#93A877" stopOpacity="0.34" />
+          <stop offset="0" stopColor="#93A877" stopOpacity="1" />
+          <stop offset="0.62" stopColor="#93A877" stopOpacity="0.82" />
           <stop offset="1" stopColor="#93A877" stopOpacity="0" />
         </radialGradient>
         <linearGradient
@@ -307,11 +308,11 @@ const Daisy = forwardRef(function Daisy(
         ref={shadowRef}
         className="daisy-shadow"
         cx={center.x + 8}
-        cy={center.y + 98}
-        rx="126"
-        ry="34"
+        cy={center.y + 96}
+        rx="116"
+        ry="30"
         fill="url(#shadowGrad)"
-        opacity="0.16"
+        opacity="0.2"
       />
 
       <g ref={flowerRef} className="flower">

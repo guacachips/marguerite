@@ -39,6 +39,18 @@ export default function App() {
   const model = useMemo(() => generateDaisy(seed), [seed])
   const sceneRef = useRef(null)
   const daisyRef = useRef(null)
+  // desktop (a fine pointer / mouse) is powerful enough to keep the flower
+  // idling continuously; touch devices stay lean (throttled idle + auto-rest).
+  const lean = useMemo(() => {
+    if (typeof window === 'undefined') return true
+    const ua = navigator.userAgent || ''
+    const mobileUA = /Mobi|Android|iPhone|iPad|iPod|IEMobile|BlackBerry/i.test(ua)
+    const mq = window.matchMedia
+    const coarse = mq && mq('(pointer: coarse)').matches
+    const fine = mq && mq('(pointer: fine)').matches
+    // lean = phone/touch-primary (perf-saving); full idle on desktop-with-mouse
+    return mobileUA || (coarse && !fine)
+  }, [])
 
   const currentWord = pluckedCount > 0 ? wordAt(pluckedCount - 1) : null
 
@@ -126,6 +138,7 @@ export default function App() {
   // auto-rest: a couple of seconds after the last tap, let the flower go still
   // (the dominant "heats while you linger" cost). It wakes on the next touch.
   useEffect(() => {
+    if (!lean) return // desktop: never auto-rest — keep the peaceful idling
     let timer
     const arm = () => {
       setResting(false)
@@ -138,7 +151,7 @@ export default function App() {
       clearTimeout(timer)
       window.removeEventListener('pointerdown', arm)
     }
-  }, [])
+  }, [lean])
 
   return (
     <Stage
@@ -163,6 +176,7 @@ export default function App() {
             onVerdict={handleVerdict}
             onTimewarp={setTimewarp}
             resting={resting}
+            lean={lean}
           />
         </>
       }

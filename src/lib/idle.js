@@ -31,6 +31,7 @@ export function startIdle(refs) {
     petalEls,
     model,
     vec,
+    lean,
     reduced,
   } = refs
 
@@ -48,13 +49,26 @@ export function startIdle(refs) {
   if (coreGlowEl) gsap.set(coreGlowEl, { svgOrigin: `${cx} ${cy}` })
   if (stemEl) gsap.set(stemEl, { svgOrigin: `${cx} ${cy + model.heartR}` })
 
+  // Desktop only: per-petal shiver quickSetters. Off on mobile (lean) because
+  // rotating each petal inside the grouped watercolor filter re-rasters it every
+  // frame — fine on a powerful desktop, too hot on a phone.
+  const petalRot =
+    lean || !petalEls
+      ? null
+      : petalEls.map((el) => {
+          if (!el) return null
+          gsap.set(el, { transformOrigin: '50% 100%' })
+          return gsap.quickSetter(el, 'rotation', 'deg')
+        })
+
   const update = () => {
-    // ~30fps cap: breathing/sway are slow motions, so halving the update rate
-    // halves the idle CPU and the per-frame re-compositing of the flower —
-    // the dominant "heats while you linger" cost, per on-device profiling.
     const now = gsap.ticker.time
-    if (now - lastTick < 0.032) return
-    lastTick = now
+    // mobile (lean): cap to ~30fps — halves the idle CPU and the per-frame
+    // re-compositing of the flower. Desktop runs full-rate (it's powerful).
+    if (lean) {
+      if (now - lastTick < 0.032) return
+      lastTick = now
+    }
     const t = now - t0
     const isReduced = reduced()
 
@@ -92,6 +106,16 @@ export function startIdle(refs) {
 
     // ---- ground shadow deforms with sway -------------------------------
     if (shadowEl) gsap.set(shadowEl, { scaleX: 1 + sway * 0.03, x: sway * 4 })
+
+    // ---- per-petal shiver (desktop only; skip plucked) -----------------
+    if (petalRot) {
+      for (let i = 0; i < petalEls.length; i++) {
+        const setter = petalRot[i]
+        if (!petalEls[i] || !setter) continue
+        const p = model.petals[i]
+        setter(Math.sin(t * (TAU / p.swayPeriod) + p.swayPhase) * p.swayAmp)
+      }
+    }
   }
 
   // ---- gated lifecycle: only spin the ticker while the flower is alive --
