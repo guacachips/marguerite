@@ -20,6 +20,15 @@ export function useParallax(enabled = true) {
   enabledRef.current = enabled
 
   useEffect(() => {
+    // parallax is mouse-driven; skip it entirely on coarse-pointer (touch)
+    // devices — no mouse there, so it would only burn per-frame work on mobile.
+    if (
+      typeof window === 'undefined' ||
+      !window.matchMedia ||
+      !window.matchMedia('(pointer: fine)').matches
+    ) {
+      return
+    }
     const onMouse = (e) => {
       if (!enabledRef.current) return
       const w = window.innerWidth || 1

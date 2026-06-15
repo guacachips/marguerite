@@ -1,8 +1,14 @@
 /* =========================================================================
-   idle.js — the flower is never still. One gsap.ticker callback drives every
-   idle motion with time-based sine math at mutually-incommensurate periods
+   idle.js — the flower's living motion. One gsap.ticker callback drives every
+   idle movement with time-based sine math at mutually-incommensurate periods
    (so it never visibly loops): breathing, sway, stem sway, per-petal shiver,
-   core glow, pointer/tilt parallax, and the sympathetic "heartbeat" on pluck.
+   core glow, pointer parallax, and the sympathetic "heartbeat" on pluck.
+
+   PERF: the loop is PAUSED by default and only runs during the ritual (the
+   closed bud doesn't need to breathe at 60fps behind the intro). Transform
+   ORIGINS are posed once at setup — never re-passed per frame — so GSAP never
+   re-derives the SVG matrix pin, and the filtered subtree isn't needlessly
+   invalidated. Both changes were driven by on-device profiling.
    ========================================================================= */
 import gsap from './gsapSetup.js'
 
@@ -33,12 +39,15 @@ export function startIdle(refs) {
   const baseOriginY = model.view.h
   const t0 = gsap.ticker.time
   let glowBeat = 0
-  // when a tween (e.g. the verdict zoom) takes ownership of flowerEl, the idle
-  // stops writing its transform/origin so it can't fight the tween every frame.
   let flowerFrozen = false
 
-  // Pre-pose each petal's origin ONCE and use a rotation quickSetter per frame
-  // (far cheaper than a full gsap.set with transformOrigin recompute × up to 37).
+  // ---- pose all transform origins ONCE (constant) --------------------
+  gsap.set(corollaEl, { svgOrigin: `${cx} ${cy}` })
+  gsap.set(flowerEl, { svgOrigin: `${cx} ${baseOriginY}` })
+  if (coreGlowEl) gsap.set(coreGlowEl, { svgOrigin: `${cx} ${cy}` })
+  if (stemEl) gsap.set(stemEl, { svgOrigin: `${cx} ${cy + model.heartR}` })
+
+  // pre-pose each petal's origin once; animate only rotation via a quickSetter
   const petalRot = petalEls.map((el) => {
     if (!el) return null
     gsap.set(el, { transformOrigin: '50% 100%' })
@@ -49,23 +58,15 @@ export function startIdle(refs) {
     const t = gsap.ticker.time - t0
     const isReduced = reduced()
 
-    // ---- breathing (always, gentler when reduced) ----------------------
+    // ---- breathing (origin already posed) ------------------------------
     const breath = Math.sin(t * (TAU / 4.2))
     const amt = isReduced ? 0.004 : 0.009
-    gsap.set(corollaEl, {
-      scale: 1 + amt + breath * amt,
-      svgOrigin: `${cx} ${cy}`,
-      force3D: true,
-    })
+    gsap.set(corollaEl, { scale: 1 + amt + breath * amt, force3D: true })
 
     // ---- core glow ------------------------------------------------------
     if (coreGlowEl) {
       const g = 0.46 + (isReduced ? 0 : 0.05 * breath) + glowBeat
-      gsap.set(coreGlowEl, {
-        opacity: Math.min(1, g),
-        scale: 1 + glowBeat * 0.45,
-        svgOrigin: `${cx} ${cy}`,
-      })
+      gsap.set(coreGlowEl, { opacity: Math.min(1, g), scale: 1 + glowBeat * 0.45 })
     }
     glowBeat *= 0.9
 
@@ -78,30 +79,19 @@ export function startIdle(refs) {
     const py = vec.current.cy
     const sway = Math.sin(t * (TAU / 6.0))
 
-    // ---- whole-flower sway + parallax tilt (around stem base) ----------
+    // ---- whole-flower sway + parallax tilt -----------------------------
     if (!flowerFrozen) {
-      gsap.set(flowerEl, {
-        rotation: sway * 1.5 + px * 1.1,
-        x: px * 7,
-        y: py * 4,
-        svgOrigin: `${cx} ${baseOriginY}`,
-        force3D: true,
-      })
+      gsap.set(flowerEl, { rotation: sway * 1.5 + px * 1.1, x: px * 7, y: py * 4, force3D: true })
     }
 
     // ---- stem's own slow sway ------------------------------------------
     if (stemEl) {
       const stemSway = Math.sin(t * (TAU / 7.0) + 1.3)
-      gsap.set(stemEl, {
-        rotation: stemSway * 2.0,
-        svgOrigin: `${cx} ${cy + model.heartR}`,
-      })
+      gsap.set(stemEl, { rotation: stemSway * 2.0 })
     }
 
     // ---- ground shadow deforms with sway -------------------------------
-    if (shadowEl) {
-      gsap.set(shadowEl, { scaleX: 1 + sway * 0.03, x: sway * 4 })
-    }
+    if (shadowEl) gsap.set(shadowEl, { scaleX: 1 + sway * 0.03, x: sway * 4 })
 
     // ---- per-petal shiver (skip plucked) -------------------------------
     for (let i = 0; i < petalEls.length; i++) {
@@ -112,12 +102,25 @@ export function startIdle(refs) {
     }
   }
 
-  gsap.ticker.add(update)
+  // ---- gated lifecycle: only spin the ticker while the flower is alive --
+  let running = false
+  function resume() {
+    if (!running) {
+      gsap.ticker.add(update)
+      running = true
+    }
+  }
+  function pause() {
+    if (running) {
+      gsap.ticker.remove(update)
+      running = false
+    }
+  }
 
   return {
-    stop() {
-      gsap.ticker.remove(update)
-    },
+    resume,
+    pause,
+    stop: pause,
     /** Sympathetic heartbeat: the core flinches + glow flashes on each pluck. */
     pulseCore(strength = 0.38) {
       glowBeat = Math.min(0.6, glowBeat + strength)
@@ -134,9 +137,7 @@ export function startIdle(refs) {
         })
       }
     },
-    /** When the flower loses a petal it lightens — shadow contracts a touch.
-        Writes scaleY/opacity only; the idle loop owns scaleX/x, so they never
-        fight over the same transform component. */
+    /** When the flower loses a petal it lightens — shadow contracts a touch. */
     lighten(fraction) {
       if (!shadowEl) return
       gsap.to(shadowEl, {
@@ -147,9 +148,7 @@ export function startIdle(refs) {
         transformOrigin: '50% 50%',
       })
     },
-    /** Hand flowerEl to an owning tween (the verdict zoom): the idle stops
-        writing rotation/x/y/svgOrigin and neutralizes them so the tween's own
-        svgOrigin (the heart) composes the matrix cleanly. */
+    /** Hand flowerEl to an owning tween (the verdict zoom). */
     freezeFlower() {
       flowerFrozen = true
       gsap.set(flowerEl, { rotation: 0, x: 0, y: 0 })

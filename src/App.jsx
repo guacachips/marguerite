@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import gsap from './lib/gsapSetup.js'
 import { generateDaisy } from './lib/daisy.js'
@@ -103,6 +103,23 @@ export default function App() {
       audio.setMuted(next)
       return next
     })
+  }, [audio])
+
+  // free CPU/GPU when backgrounded or the screen locks: suspend audio (WebAudio
+  // doesn't auto-throttle) and pause CSS animations. rAF — and thus GSAP — already
+  // stops on its own when the page is hidden.
+  useEffect(() => {
+    const onVis = () => {
+      if (document.hidden) {
+        audio.suspend()
+        document.body.classList.add('is-hidden')
+      } else {
+        audio.resume()
+        document.body.classList.remove('is-hidden')
+      }
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
   }, [audio])
 
   return (

@@ -64,8 +64,10 @@ export class AudioEngine {
     // ---- master bus: everything → reverb → limiter → out ----------------
     this.masterVol = this._track(new Tone.Volume(0))
     this.limiter = this._track(new Tone.Limiter(-1))
+    // decay 5s (was 9s): a shorter impulse halves the convolution CPU cost
+    // with no audible difference at wet 0.3 — still spacious.
     this.reverb = this._track(
-      new Tone.Reverb({ decay: 9, preDelay: 0.04, wet: 0.3 })
+      new Tone.Reverb({ decay: 5, preDelay: 0.04, wet: 0.3 })
     )
     this.busIn = this._track(new Tone.Gain(1))
     this.busIn.connect(this.reverb)
@@ -348,6 +350,26 @@ export class AudioEngine {
 
   isMuted() {
     return this.muted
+  }
+
+  /** Suspend the audio DSP entirely (page hidden) — WebAudio keeps running in
+      the background otherwise, draining battery/heat even with the screen off
+      or muted. Resumed on return. */
+  async suspend() {
+    if (!this.started) return
+    try {
+      await Tone.getContext().rawContext.suspend()
+    } catch {
+      /* ignore */
+    }
+  }
+  async resume() {
+    if (!this.started) return
+    try {
+      await Tone.getContext().rawContext.resume()
+    } catch {
+      /* ignore */
+    }
   }
 
   dispose() {

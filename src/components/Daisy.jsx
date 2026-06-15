@@ -91,6 +91,7 @@ const Daisy = forwardRef(function Daisy(
   useEffect(() => {
     activeRef.current = phase === 'ritual'
     if (phase === 'ritual') {
+      idleRef.current && idleRef.current.resume() // the flower wakes up (idle gated to ritual)
       const anchors = elsRef.current.anchors
       if (reducedRef.current) {
         gsap.to(anchors, { scale: 1, duration: 0.5, stagger: 0.008, ease: 'power2.out' })
@@ -316,7 +317,9 @@ const Daisy = forwardRef(function Daisy(
         ))}
 
         <g ref={corollaRef} className="corolla">
-          <g ref={petalsGroupRef} className="petals">
+          {/* ONE watercolor filter on the whole group instead of one per petal
+              (×37 → ×1): far less per-frame raster while the corolla breathes. */}
+          <g ref={petalsGroupRef} className="petals" filter="url(#watercolor)">
             {petals.map((p) => (
               <g className="petal-anchor" key={p.index}>
                 <g className="petal">
@@ -326,7 +329,6 @@ const Daisy = forwardRef(function Daisy(
                     aria-hidden="true"
                     d={p.pathD}
                     fill="url(#petalGrad)"
-                    filter="url(#watercolor)"
                   />
                 </g>
               </g>

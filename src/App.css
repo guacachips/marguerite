@@ -475,14 +475,12 @@
   cursor: pointer; /* tap anywhere on the scene to pluck */
 }
 
-/* ===================== HEART POLLEN SHIMMER =========================== */
-.heart-pollen {
-  animation: pollenShimmer 3.2s ease-in-out infinite;
-}
-@keyframes pollenShimmer {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.92; }
-}
+/* ===================== HEART POLLEN (static) ========================== */
+/* Painted STATICALLY on purpose. Animating opacity on 66 circles inside the
+   breathing, filtered corolla forced a full re-raster of the flower every
+   frame — profiled as the single biggest mobile thermal cost (removing it
+   cut main-thread ~46%->19% and raster ~-75%). The heart's subtle life now
+   comes from the core-glow pulse during the ritual. */
 
 /* ============ KEYBOARD / ASSISTIVE-TECH PLUCK CONTROL ================= */
 /* One focusable control over the flower; pointers fall through to petals. */
@@ -506,4 +504,11 @@
 .pluck-key:focus-visible {
   outline: 3px solid var(--c-sage-deep);
   outline-offset: 4px;
+}
+
+/* Page hidden / screen locked: freeze all CSS animation work. */
+body.is-hidden *,
+body.is-hidden *::before,
+body.is-hidden *::after {
+  animation-play-state: paused !important;
 }

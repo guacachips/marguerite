@@ -9,6 +9,7 @@ export default function Backdrop({ vec }) {
 
   useEffect(() => {
     if (!vec) return
+    if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return // mobile: no parallax
     const el = lavisRef.current
     if (!el) return
     const set = gsap.quickSetter(el, 'css')

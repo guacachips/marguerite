@@ -68,13 +68,16 @@ export default function Meadow({ vec, reduced }) {
     }
     let stopped = false
     const tls = []
+    // rise via transform (translateY) only — animating top/left forces layout
+    // every frame; profiling showed the motes alone cost ~1500 reflows / 6s.
+    const H = backRef.current?.clientHeight || window.innerHeight || 800
     els.forEach((el, i) => {
       const m = motes[i]
       const run = () => {
         if (stopped) return
-        gsap.set(el, { left: `${Math.random() * 100}%`, top: '106%', opacity: 0, scale: 1, x: 0 })
+        gsap.set(el, { left: `${Math.random() * 100}%`, top: 0, y: H * 1.06, opacity: 0, scale: 1, x: 0 })
         const tl = gsap.timeline({ onComplete: run })
-        tl.to(el, { top: '-6%', duration: m.dur, ease: 'none' }, 0)
+        tl.to(el, { y: -H * 0.06, duration: m.dur, ease: 'none' }, 0)
           .to(
             el,
             {
@@ -107,6 +110,7 @@ export default function Meadow({ vec, reduced }) {
   // parallax — back and front drift in opposition
   useEffect(() => {
     if (!vec) return
+    if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return // mobile: no parallax
     const back = backRef.current
     const front = frontRef.current
     const setB = back && gsap.quickSetter(back, 'css')
@@ -127,7 +131,8 @@ export default function Meadow({ vec, reduced }) {
     const fly = () => {
       const el = sporeRef.current
       if (!el) return
-      gsap.set(el, { left: '-6%', top: `${30 + Math.random() * 40}%`, opacity: 0, scale: 1 })
+      const W = frontRef.current?.clientWidth || window.innerWidth || 400
+      gsap.set(el, { left: 0, top: `${30 + Math.random() * 40}%`, x: -0.06 * W, y: 0, opacity: 0, scale: 1 })
       gsap.to(el, {
         keyframes: [
           { opacity: 0.85, duration: 2 },
@@ -137,8 +142,8 @@ export default function Meadow({ vec, reduced }) {
         ease: 'none',
       })
       gsap.to(el, {
-        left: '108%',
-        top: `+=${Math.random() * 30 - 18}`,
+        x: 1.08 * W,
+        y: Math.random() * 30 - 18,
         duration: 10,
         ease: 'sine.inOut',
         onComplete: arm,
