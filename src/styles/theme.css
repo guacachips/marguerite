@@ -1,0 +1,85 @@
+/* =========================================================================
+   THEME — "Prairie Aquarelle"
+   The single source of truth for the visual language. Soft, hand-painted,
+   natural, lovely. Every component reads from these tokens.
+   ========================================================================= */
+
+:root {
+  /* ---- Core palette (locked art direction) ------------------------------ */
+  --c-cream:        #FBF7EF; /* ivoire crème — base background            */
+  --c-cream-warm:   #F6EFE0; /* warmer cream for depth                    */
+  --c-cream-deep:   #EFE6D3; /* deepest cream / soft shadow on paper      */
+
+  --c-sage:         #C9D8B6; /* sauge tendre                              */
+  --c-sage-soft:    #DCE6CC; /* misted sage                               */
+  --c-sage-deep:    #A7BE8C; /* grounded sage / stem shadow               */
+
+  --c-blush:        #E8B4B8; /* blush                                     */
+  --c-blush-soft:   #F2D3D5; /* breathed blush                            */
+  --c-blush-deep:   #D8979D; /* deeper blush accent                       */
+
+  --c-sun:          #F2C879; /* soleil doux — daisy heart                 */
+  --c-sun-soft:     #F8DDA6; /* hazy sun                                  */
+  --c-sun-deep:     #E5A33C; /* safran — heart core / glow (decorative)   */
+  --c-sun-amber:    #D98E2B; /* deepest amber for the heart center        */
+  --c-sun-text:     #A8650A; /* darkened saffron for TEXT (AA on cream)   */
+
+  --c-petal:        #FDFBF6; /* blanc cassé — petal face                  */
+  --c-petal-soft:   #FFFFFF; /* highlight                                 */
+  --c-petal-shade:  #EDE5D6; /* petal shadow side                         */
+  --c-petal-edge:   #E3D9C6; /* petal edge tint                           */
+
+  --c-stem:         #93A877; /* tige                                      */
+  --c-stem-deep:    #758C5B;
+
+  /* ---- Ink / typography colors ------------------------------------------ */
+  --c-ink:          #5B5142; /* warm brown-grey — primary text            */
+  --c-ink-soft:     #8A7E6C; /* secondary text                            */
+  --c-ink-faint:    #B6AB97; /* faint captions                            */
+  --c-ink-on-sun:   #6E4E1E; /* text over warm/sun surfaces               */
+
+  /* ---- Functional gradients --------------------------------------------- */
+  --grad-sky:
+    radial-gradient(120% 90% at 50% 8%, var(--c-cream-warm) 0%, var(--c-cream) 42%, var(--c-cream-deep) 100%);
+  --grad-meadow:
+    radial-gradient(140% 60% at 50% 118%, var(--c-sage-soft) 0%, rgba(201, 216, 182, 0) 60%);
+  --grad-sun-glow:
+    radial-gradient(circle at 50% 50%, var(--c-sun-soft) 0%, rgba(248, 221, 166, 0) 70%);
+  --grad-heart:
+    radial-gradient(circle at 42% 38%, var(--c-sun) 0%, var(--c-sun-deep) 58%, var(--c-sun-amber) 100%);
+
+  /* ---- Soft, diffuse shadows (no harsh edges) --------------------------- */
+  --shadow-petal:   0 6px 14px rgba(110, 96, 70, 0.10);
+  --shadow-card:    0 18px 50px -18px rgba(110, 96, 70, 0.34);
+  --shadow-soft:    0 10px 30px -12px rgba(110, 96, 70, 0.22);
+  --shadow-stage:   0 40px 120px -40px rgba(86, 74, 52, 0.45);
+  --glow-warm:      0 0 60px rgba(242, 200, 121, 0.45);
+
+  /* ---- Typography -------------------------------------------------------- */
+  --font-serif: 'Fraunces', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans:  'Nunito', ui-rounded, 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --fs-verdict:  clamp(2.6rem, 12vw, 4.4rem);
+  --fs-word:     clamp(1.9rem, 8.5vw, 3rem);
+  --fs-title:    clamp(2.1rem, 9vw, 3.2rem);
+  --fs-body:     clamp(1rem, 4.2vw, 1.15rem);
+  --fs-cta:      clamp(1rem, 4.4vw, 1.2rem);
+  --fs-caption:  clamp(0.78rem, 3.4vw, 0.92rem);
+
+  /* ---- Geometry ---------------------------------------------------------- */
+  --radius-pill:  999px;
+  --radius-card:  28px;
+  --radius-stage: 38px;
+
+  /* ---- Motion (shared easings, single source of truth) ------------------ */
+  --ease-soft:     cubic-bezier(0.22, 1, 0.36, 1);   /* gentle settle      */
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1); /* playful overshoot */
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-breath:   cubic-bezier(0.45, 0, 0.55, 1);
+
+  /* ---- Layout ------------------------------------------------------------ */
+  --stage-max-w: 440px;
+  --stage-max-h: 920px;
+
+  color-scheme: light;
+}

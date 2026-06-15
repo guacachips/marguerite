@@ -1,0 +1,506 @@
+/* =========================================================================
+   App / component styles — the painted UI of "Effeuille la marguerite".
+   Layout, typography and the soft surfaces; motion lives in JS (GSAP).
+   ========================================================================= */
+
+/* ---- stacking: scene (shakeable) under a stable UI layer ---------------- */
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.ui-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ============================ BACKDROP (L0/L1) =========================== */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+.lavis {
+  position: absolute;
+  inset: -12%;
+  will-change: transform;
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(42px);
+}
+.blob--sage {
+  width: 62%;
+  height: 48%;
+  left: -10%;
+  top: 6%;
+  background: var(--c-sage);
+  opacity: 0.18;
+}
+.blob--blush {
+  width: 54%;
+  height: 46%;
+  right: -14%;
+  top: 36%;
+  background: var(--c-blush);
+  opacity: 0.15;
+}
+.blob--sun {
+  width: 48%;
+  height: 42%;
+  left: 16%;
+  bottom: -10%;
+  background: var(--c-sun);
+  opacity: 0.13;
+}
+.rays {
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(
+    116deg,
+    transparent 42%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 58%
+  );
+  mix-blend-mode: soft-light;
+  filter: blur(8px);
+}
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 100% at 50% 38%, transparent 54%, rgba(147, 168, 120, 0.13) 100%);
+}
+.grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+}
+
+/* ============================ MEADOW (L2/L4) ============================= */
+.meadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.meadow--back {
+  z-index: 1;
+  will-change: transform;
+}
+.meadow--front {
+  z-index: 4;
+  will-change: transform;
+}
+.mote {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 36%, #ffffff, var(--c-sun) 70%, rgba(242, 200, 121, 0) 100%);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.mote--front {
+  background: radial-gradient(circle at 38% 36%, #ffffff, var(--c-sun-soft) 72%, rgba(248, 221, 166, 0) 100%);
+}
+.ghost-daisy {
+  position: absolute;
+  filter: blur(7px);
+}
+.spore {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff, var(--c-sun));
+  box-shadow: 0 0 14px 2px rgba(242, 200, 121, 0.7);
+  opacity: 0;
+}
+
+/* ============================== DAISY (L3) ============================== */
+.daisy-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 2;
+}
+.daisy-shadow {
+  filter: blur(14px);
+}
+.petal-path {
+  cursor: pointer;
+  pointer-events: all; /* a wide transparent stroke enlarges the tap target */
+  stroke: rgba(255, 255, 255, 0);
+  stroke-width: 20;
+}
+.petal-path:focus {
+  outline: none;
+}
+.petal-path:focus-visible {
+  stroke: var(--c-sun-deep);
+  stroke-width: 2.5;
+}
+.core-glow,
+.bloom-wave,
+.heart-spec {
+  pointer-events: none;
+}
+
+/* ============================== WORD BAND =============================== */
+.word-band {
+  position: absolute;
+  top: 23%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.word-stack {
+  position: relative;
+  width: min(82%, 360px);
+  height: 4.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.word {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 380;
+  font-size: var(--fs-word);
+  color: var(--c-sun-text); /* fallback; per-word textAccent set inline */
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+.word-underline {
+  position: absolute;
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 58%;
+  height: 12px;
+  overflow: visible;
+  opacity: 0;
+}
+.is-folie {
+  animation: folieJitter 0.6s ease-in-out;
+}
+@keyframes folieJitter {
+  0%, 100% { text-shadow: none; }
+  20% { text-shadow: 1px 0 var(--c-blush); }
+  40% { text-shadow: -1px 1px var(--c-sun); }
+  60% { text-shadow: 1px -1px var(--c-blush-deep); }
+  80% { text-shadow: -1px 0 var(--c-sun-deep); }
+}
+
+/* ================================ HINT ================================= */
+.hint {
+  position: absolute;
+  top: 33%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--fs-caption);
+  color: var(--c-ink-faint);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+.hint--show {
+  opacity: 1;
+  animation: hintPulse 2.6s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.9; }
+}
+
+/* =============================== INTRO ================================= */
+.intro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  padding: calc(env(safe-area-inset-top) + 8vh) 9vw calc(env(safe-area-inset-bottom) + 26px);
+  pointer-events: auto;
+  z-index: 10;
+}
+.intro-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  font-size: var(--fs-title);
+  line-height: 1.05;
+  color: var(--c-ink);
+  display: flex;
+  flex-direction: column;
+}
+.intro-title-line {
+  display: block;
+}
+.intro-line {
+  margin-top: 1.3rem;
+  font-size: var(--fs-body);
+  color: var(--c-ink);
+  opacity: 0.72;
+  line-height: 1.55;
+}
+.intro-bottom {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* ================================ BUTTONS ============================== */
+.btn {
+  pointer-events: auto;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active {
+  filter: brightness(0.97);
+}
+.btn--cta {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem 1.9rem;
+  border-radius: var(--radius-pill);
+  background: rgba(232, 180, 184, 0.4);
+  color: var(--c-ink);
+  font-size: var(--fs-cta);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+.btn-label {
+  position: relative;
+  z-index: 2;
+}
+.btn-shimmer {
+  position: absolute;
+  top: 0;
+  left: -65%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: shimmer 5s ease-in-out infinite;
+  z-index: 1;
+}
+@keyframes shimmer {
+  0% { left: -65%; }
+  55%, 100% { left: 130%; }
+}
+.btn--replay {
+  margin-top: 1.9rem;
+  padding: 0.82rem 1.7rem;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  border: 1.5px solid var(--c-sage-deep);
+  color: var(--c-stem-deep);
+  font-weight: 600;
+  font-size: var(--fs-cta);
+}
+
+/* =============================== VERDICT =============================== */
+.verdict {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  filter: saturate(var(--sat, 1)) brightness(calc(0.96 + 0.08 * var(--sat, 1)));
+}
+.veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--c-cream) 0%, rgba(251, 247, 239, 0.95) 55%, rgba(251, 247, 239, 0.88) 100%);
+}
+.verdict-card {
+  position: relative;
+  z-index: 2;
+  width: min(86%, 384px);
+  padding: 2.4rem 1.8rem 2rem;
+  text-align: center;
+  border-radius: var(--radius-card);
+  background: rgba(253, 251, 246, 0.82);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(232, 180, 184, 0.4);
+  box-shadow: var(--shadow-card);
+}
+.verdict-kicker {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--fs-caption);
+  letter-spacing: 0.2em;
+  text-transform: lowercase;
+  color: var(--c-sage-deep);
+  margin-bottom: 0.9rem;
+}
+.verdict-word {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 420;
+  font-size: var(--fs-verdict);
+  line-height: 1.02;
+  color: var(--c-sun-text); /* fallback; per-word textAccent set inline */
+}
+.vl {
+  display: inline-block;
+  white-space: pre;
+  will-change: transform, opacity, filter;
+}
+.verdict-line {
+  margin-top: 1.05rem;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--fs-body);
+  color: #6e6354; /* AA on the cream card (~5.6:1) */
+}
+.verdict-ornament {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+}
+.orn-petal {
+  width: 8px;
+  height: 20px;
+  border-radius: 50% 50% 50% 50% / 64% 64% 36% 36%;
+  background: var(--c-petal);
+  box-shadow: inset 0 0 0 1px var(--c-petal-edge), var(--shadow-petal);
+}
+.orn-petal:first-child {
+  transform: rotate(-22deg);
+}
+.orn-petal:last-child {
+  transform: rotate(22deg);
+}
+.orn-glyph {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.relique {
+  position: absolute;
+  width: 22px;
+  height: 44px;
+  right: 15%;
+  top: 23%;
+  z-index: 3;
+  opacity: 0.85;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 10px rgba(110, 96, 70, 0.12));
+}
+
+/* =============================== CONTROLS ============================== */
+.controls {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 14px);
+  right: 16px;
+  z-index: 30;
+  pointer-events: none;
+}
+.mute-btn {
+  pointer-events: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--c-sage-deep);
+  background: rgba(255, 255, 255, 0.58);
+  border: none;
+  cursor: pointer;
+  opacity: 0.78;
+  transition: opacity 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.mute-btn:hover {
+  opacity: 1;
+}
+.mute-btn:focus-visible {
+  outline: 2px solid var(--c-sage-deep);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+/* =============================== A11Y =================================== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===================== TIME-WARP (last petal) ========================= */
+.scene {
+  transition: filter 0.9s ease;
+}
+.scene--timewarp {
+  filter: saturate(0.62) brightness(1.03) blur(1.4px);
+}
+
+/* ===================== HEART POLLEN SHIMMER =========================== */
+.heart-pollen {
+  animation: pollenShimmer 3.2s ease-in-out infinite;
+}
+@keyframes pollenShimmer {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.92; }
+}
+
+/* ============ KEYBOARD / ASSISTIVE-TECH PLUCK CONTROL ================= */
+/* One focusable control over the flower; pointers fall through to petals. */
+.pluck-key {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 240px;
+  height: 240px;
+  max-width: 64vw;
+  max-height: 64vw;
+  transform: translate(-50%, -50%);
+  border: none;
+  background: transparent;
+  color: transparent;
+  border-radius: 24px;
+  pointer-events: none;
+  font-size: 1px;
+  z-index: 3;
+}
+.pluck-key:focus-visible {
+  outline: 3px solid var(--c-sage-deep);
+  outline-offset: 4px;
+}

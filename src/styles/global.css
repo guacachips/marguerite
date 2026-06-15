@@ -1,0 +1,107 @@
+/* =========================================================================
+   GLOBAL — reset + the portrait "stage" that houses the whole experience.
+   On mobile the stage is the full viewport. On desktop it becomes a centered
+   portrait surface (a phone-shaped canvas) floating on a calm backdrop.
+   ========================================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--c-ink);
+  background:
+    radial-gradient(140% 100% at 50% 0%, var(--c-cream-warm) 0%, var(--c-cream-deep) 70%, #E6DAC4 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+  /* feel like an app, not a document */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+#root {
+  display: grid;
+  place-items: center;
+}
+
+/* ---- The stage -------------------------------------------------------- */
+.stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--grad-sky);
+  isolation: isolate;
+}
+
+/* On larger screens, frame the experience as a portrait surface */
+@media (min-width: 560px) {
+  body {
+    padding: 24px;
+  }
+  .stage {
+    width: min(var(--stage-max-w), 92vw);
+    height: min(var(--stage-max-h), 94vh);
+    border-radius: var(--radius-stage);
+    box-shadow: var(--shadow-stage);
+  }
+}
+
+/* ---- Shared helpers --------------------------------------------------- */
+.full-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.u-serif {
+  font-family: var(--font-serif);
+}
+
+.u-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* Respect reduced motion globally as a baseline; components layer richer
+   handling on top via the prefers-reduced-motion query / JS checks. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
