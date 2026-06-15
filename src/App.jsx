@@ -42,7 +42,6 @@ export default function App() {
 
   // ---- begin: wake audio + bloom (must run inside the click gesture) --
   const handleStart = useCallback(() => {
-    parallax.requestTilt()
     haptics.start()
     audio
       .ensureStarted()
@@ -52,7 +51,7 @@ export default function App() {
       })
       .catch(() => {})
     setPhase('ritual')
-  }, [audio, haptics, parallax])
+  }, [audio, haptics])
 
   const handlePluck = useCallback(({ count }) => {
     setPluckedCount(count)

@@ -1,6 +1,7 @@
 /* =========================================================================
-   useParallax — a single smoothed pointer vector that the layers read to
-   drift at different depths (mouse on desktop, gyroscope on mobile).
+   useParallax — a single smoothed pointer vector the layers read to drift at
+   different depths. DESKTOP POINTER (mouse) only: no device-motion on mobile,
+   so the experience never asks for the gyroscope / motion permission.
    Smoothing rides the shared gsap.ticker — no extra RAF loop.
    The vector is purely decorative; the ritual never depends on it.
    ========================================================================= */
@@ -9,11 +10,9 @@ import gsap from './gsapSetup.js'
 
 /**
  * @param {boolean} enabled  when false, targets ease back to center
- * @returns {{ vec: React.MutableRefObject<{tx:number,ty:number,cx:number,cy:number}>,
- *            requestTilt: () => void }}
+ * @returns {{ vec: React.MutableRefObject<{tx:number,ty:number,cx:number,cy:number}> }}
  *   vec.cx / vec.cy are the smoothed pointer in [-1, 1]; multiply by a layer
- *   depth to offset it. requestTilt() asks iOS for gyroscope permission and
- *   must be called from a user gesture.
+ *   depth to offset it.
  */
 export function useParallax(enabled = true) {
   const vec = useRef({ tx: 0, ty: 0, cx: 0, cy: 0 })
@@ -21,25 +20,12 @@ export function useParallax(enabled = true) {
   enabledRef.current = enabled
 
   useEffect(() => {
-    let lastTilt = 0
-
     const onMouse = (e) => {
       if (!enabledRef.current) return
       const w = window.innerWidth || 1
       const h = window.innerHeight || 1
       vec.current.tx = (e.clientX / w) * 2 - 1
       vec.current.ty = (e.clientY / h) * 2 - 1
-    }
-
-    const onTilt = (e) => {
-      if (!enabledRef.current) return
-      const now = performance.now()
-      if (now - lastTilt < 33) return // throttle to ~30 Hz
-      lastTilt = now
-      const g = (e.gamma || 0) / 28 // left/right tilt
-      const b = ((e.beta || 0) - 45) / 28 // front/back, neutral ≈ 45°
-      vec.current.tx = Math.max(-1, Math.min(1, g))
-      vec.current.ty = Math.max(-1, Math.min(1, b))
     }
 
     const smooth = () => {
@@ -52,23 +38,13 @@ export function useParallax(enabled = true) {
     }
 
     window.addEventListener('mousemove', onMouse, { passive: true })
-    window.addEventListener('deviceorientation', onTilt, { passive: true })
     gsap.ticker.add(smooth)
 
     return () => {
       window.removeEventListener('mousemove', onMouse)
-      window.removeEventListener('deviceorientation', onTilt)
       gsap.ticker.remove(smooth)
     }
   }, [])
 
-  const requestTilt = () => {
-    const D = typeof window !== 'undefined' ? window.DeviceOrientationEvent : null
-    if (D && typeof D.requestPermission === 'function') {
-      // iOS 13+ — must be triggered by a user gesture; ignore rejection
-      D.requestPermission().catch(() => {})
-    }
-  }
-
-  return { vec, requestTilt }
+  return { vec }
 }
