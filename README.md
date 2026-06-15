@@ -4,6 +4,8 @@ Une web app **portrait, mobile-first**, qui recrée le rituel d'enfance de l'eff
 
 Ce n'est pas une démo : c'est une **expérience finie**, pensée comme un objet d'art sensoriel — son + toucher + image couplés, direction artistique « prairie aquarelle », sound design 100 % synthétisé.
 
+**🌐 En ligne : https://la-marguerite.pages.dev**
+
 ---
 
 ## Lancer le projet
@@ -79,6 +81,17 @@ Fond ivoire crème, sauge tendre, blush, soleil doux ; pétales blanc cassé, c�
 - **`prefers-reduced-motion`** respecté : screenshake / flutter / parallaxe / flashs coupés, chute remplacée par un fondu doux, idle réduit à une respiration lente.
 - Pétales **focusables au clavier** (`role=button`, Espace/Entrée), région **`aria-live`** annonçant chaque mot et le verdict, bouton mute accessible, contrastes soignés.
 - Animations exclusivement **`transform`/`opacity`** (GPU), filtres SVG rastérisés une fois, pools de particules, **un seul** `gsap.ticker`, `maxPolyphony` Tone limité.
+
+## Déploiement
+
+Site statique déployé sur **Cloudflare Pages** :
+
+```bash
+npm run build
+wrangler pages deploy dist --project-name la-marguerite --branch main
+```
+
+→ **https://la-marguerite.pages.dev**
 
 ---
 
