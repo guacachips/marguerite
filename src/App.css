@@ -130,9 +130,8 @@
   overflow: visible;
   z-index: 2;
 }
-.daisy-shadow {
-  filter: blur(14px);
-}
+/* .daisy-shadow is softened by a radial-gradient fill (see Daisy.jsx), NOT a
+   CSS blur: filter:blur on an SVG child element does not render on mobile. */
 .petal-path {
   cursor: pointer;
   pointer-events: all; /* a wide transparent stroke enlarges the tap target */

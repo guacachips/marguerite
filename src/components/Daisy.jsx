@@ -264,6 +264,13 @@ const Daisy = forwardRef(function Daisy(
           <stop offset="0.5" stopColor="#F2C879" stopOpacity="0.4" />
           <stop offset="1" stopColor="#F2C879" stopOpacity="0" />
         </radialGradient>
+        {/* soft ground shadow as a radial fade — NOT a CSS blur, which fails to
+            render on SVG child elements on mobile browsers (and costs GPU). */}
+        <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#93A877" stopOpacity="0.62" />
+          <stop offset="0.5" stopColor="#93A877" stopOpacity="0.34" />
+          <stop offset="1" stopColor="#93A877" stopOpacity="0" />
+        </radialGradient>
         <linearGradient
           id="stemGrad"
           gradientUnits="userSpaceOnUse"
@@ -300,10 +307,10 @@ const Daisy = forwardRef(function Daisy(
         ref={shadowRef}
         className="daisy-shadow"
         cx={center.x + 8}
-        cy={center.y + 96}
-        rx="104"
-        ry="24"
-        fill="#93A877"
+        cy={center.y + 98}
+        rx="126"
+        ry="34"
+        fill="url(#shadowGrad)"
         opacity="0.16"
       />
 
