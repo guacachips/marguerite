@@ -5,7 +5,15 @@
 ## North Star
 Une marguerite peinte à l'aquarelle, **vivante et respirante**, qu'on joue du bout du doigt : chaque tap détache un pétale qui **plane comme un voile**, fait sonner une **note cristalline montante** vers le verdict, et fait **fleurir le mot suivant**. Le dernier pétale **dilate le temps** et peint plein écran une **carte poétique**. Un instrument-jouet sensoriel — triple couplage son + toucher + image, servi par la retenue éditoriale et le game-feel (anticipation/overshoot). C'est une **expiration, pas une victoire**.
 
-## Direction artistique (verrouillée — alignée `theme.css`)
+## L'expérience (3 écrans)
+
+| Écran | Ce qui se passe |
+|-------|-----------------|
+| **Intro** | Titre poétique, marguerite en bouton fermé qui respire, CTA *« Effeuiller la marguerite »* (shimmer). Le tap réveille l'audio et **fait éclore** la fleur. |
+| **Rituel** | Tap-to-pluck : chaque pétale fait *squash → snap élastique → vol planant* avec flutter 3D, traînée « encre dans l'eau », pollen éjecté, ripple, son cristallin montant, haptique. Le **mot du cycle** se pose au-dessus en serif Fraunces. Le cœur bat à chaque pétale, la fleur s'allège. |
+| **Verdict** | Le dernier pétale plane au ralenti (*time-warp*), le cœur émet une onde de lumière, le pollen s'élève. Un voile crème monte, une carte poétique apparaît et le verdict **s'écrit lettre par lettre**. *« Une autre fleur »* recommence avec un nouveau nombre de pétales. |
+
+## Direction artistique — « Prairie aquarelle » (verrouillée, alignée `theme.css`)
 - Palette : fond ivoire crème `--c-cream` #FBF7EF → warm #F6EFE0 → deep #EFE6D3 ; sauge `--c-sage` #C9D8B6 ; blush `--c-blush` #E8B4B8 ; soleil `--c-sun` #F2C879 ; pétale `--c-petal` #FDFBF6 ; cœur safran `--grad-heart` #F2C879→#E5A33C→#D98E2B.
 - **Jamais de noir, jamais de bord dur.** Toute ombre = teinte chaude désaturée, opacité ≤ .2, blur généreux 20–40px.
 - Typo : **Fraunces** italique (mots du cycle, verdict, titre) ; **Nunito** (UI/CTA/captions).

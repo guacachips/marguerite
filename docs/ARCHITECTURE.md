@@ -1,7 +1,26 @@
 # Architecture & développement
 
-Compagnon technique du [README](../README.md). La direction artistique et la
-chorégraphie complètes vivent dans [`DESIGN_BIBLE.md`](DESIGN_BIBLE.md).
+Compagnon technique du [README](../README.md). L'expérience, la direction
+artistique, la chorégraphie et le sound design vivent dans
+[`DESIGN_BIBLE.md`](DESIGN_BIBLE.md).
+
+## Lancer le projet
+
+```bash
+npm install
+npm run dev        # dev — Vite, http://localhost:5173
+npm run build      # build de production → dist/
+npm run preview    # sert le build de production
+```
+
+À ouvrir sur mobile (ou en responsive portrait) pour l'expérience complète. Le son démarre au premier tap sur le CTA — contrainte *autoplay* des navigateurs.
+
+## Stack
+
+- **React 19 + Vite** — coquille applicative, machine à états du flow.
+- **GSAP 3.15** (tous plugins gratuits : Physics2D, MotionPath, DrawSVG, CustomEase) — toute la motion.
+- **Tone.js 15** — sound design **entièrement synthétisé**, zéro asset audio.
+- Marguerite **procédurale en SVG** (aquarelle via filtres `feTurbulence`/`feDisplacement`).
 
 ## Arborescence du code
 
@@ -37,3 +56,14 @@ docs/DESIGN_BIBLE.md       cahier des charges DA & chorégraphie (source de vér
 - **`prefers-reduced-motion`** respecté : screenshake / flutter / parallaxe / flashs coupés, chute remplacée par un fondu doux, idle réduit à une respiration lente.
 - Pétales **focusables au clavier** (`role=button`, Espace/Entrée), région **`aria-live`** annonçant chaque mot et le verdict, bouton mute accessible, contrastes soignés.
 - Animations exclusivement **`transform`/`opacity`** (GPU), filtres SVG rastérisés une fois, pools de particules, **un seul** `gsap.ticker`, `maxPolyphony` Tone limité.
+
+## Déploiement
+
+Site statique déployé sur **Cloudflare Pages** :
+
+```bash
+npm run build
+wrangler pages deploy dist --project-name la-marguerite --branch main
+```
+
+→ **https://la-marguerite.pages.dev**
